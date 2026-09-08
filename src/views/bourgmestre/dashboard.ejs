@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Espace Bourgmestre — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="tableau-bord">
+    <div class="conteneur">
+      <div class="tableau-bord-entete">
+        <div>
+          <h1>Signature des documents</h1>
+          <p>Ces demandes ont été vérifiées par le bureau et attendent votre signature.</p>
+        </div>
+      </div>
+
+      <div class="grille-principale">
+        <div class="panneau">
+          <h2>Demandes prêtes à signer</h2>
+          <div id="liste-demandes" class="liste-demandes">
+            <div class="etat-vide">Chargement…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/demandes-communes.js"></script>
+  <script>
+    async function chargerDemandes() {
+      const zone = document.getElementById('liste-demandes');
+      try {
+        const res = await fetch('/demandes/a-signer', { credentials: 'include' });
+        const data = await res.json();
+
+        if (!data.demandes || data.demandes.length === 0) {
+          zone.innerHTML = '<div class="etat-vide">Aucune demande en attente de signature.</div>';
+          return;
+        }
+
+        zone.innerHTML = data.demandes.map((d) => {
+          const actions = `
+            <div class="ligne-demande-actions">
+              <button class="bouton bouton-primaire bouton-petit" onclick="signer(${d.id})">Signer</button>
+            </div>`;
+          return rendreLigneDemande(d, actions);
+        }).join('');
+      } catch (err) {
+        zone.innerHTML = '<div class="etat-vide">Impossible de charger les demandes.</div>';
+      }
+    }
+
+    async function signer(id) {
+      await fetch('/demandes/' + id + '/signer', { method: 'POST', credentials: 'include' });
+      chargerDemandes();
+    }
+
+    chargerDemandes();
+  </script>
+</body>
+</html>

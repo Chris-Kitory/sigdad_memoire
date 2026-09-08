@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Se connecter — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <main class="page-auth">
+    <div class="carte-auth">
+      <h1>Se connecter</h1>
+      <p class="carte-auth-sous">Accédez à votre espace SIGDA.</p>
+
+      <div id="erreur" class="message-erreur"></div>
+
+      <form id="form-connexion" onsubmit="connexion(event)">
+        <div class="champ-bloc">
+          <label class="champ-label" for="email">Adresse e-mail</label>
+          <input type="email" id="email" class="champ" style="width:100%" required>
+        </div>
+        <div class="champ-bloc">
+          <label class="champ-label" for="mot-de-passe">Mot de passe</label>
+          <input type="password" id="mot-de-passe" class="champ" style="width:100%" required>
+        </div>
+        <button type="submit" class="bouton bouton-primaire bouton-large">Se connecter</button>
+      </form>
+
+      <div class="carte-auth-pied">
+        Pas encore de compte ? <a href="/register">Créer un compte citoyen</a>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    async function connexion(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const motDePasse = document.getElementById('mot-de-passe').value;
+      const erreur = document.getElementById('erreur');
+      erreur.style.display = 'none';
+
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, motDePasse }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          erreur.textContent = data.error || 'Connexion impossible.';
+          erreur.style.display = 'block';
+          return;
+        }
+
+        const destinations = { citoyen: '/citoyen', agent: '/agent', bourgmestre: '/bourgmestre' };
+        window.location.href = destinations[data.utilisateur.role] || '/';
+      } catch (err) {
+        erreur.textContent = 'Erreur de connexion au serveur.';
+        erreur.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

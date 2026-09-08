@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon espace — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="tableau-bord">
+    <div class="conteneur">
+      <div class="tableau-bord-entete">
+        <div>
+          <h1>Mon espace citoyen</h1>
+          <p>Soumettez une nouvelle demande et suivez son avancement.</p>
+        </div>
+      </div>
+
+      <div class="grille-principale grille-avec-formulaire">
+        <div class="panneau">
+          <h2>Nouvelle demande</h2>
+          <div id="erreur-form" class="message-erreur"></div>
+          <div id="succes-form" class="message-succes"></div>
+          <form id="form-demande" onsubmit="soumettreDemande(event)">
+            <div class="champ-bloc">
+              <label class="champ-label" for="type-document">Type de document</label>
+              <select id="type-document" class="champ-select" required>
+                <option value="">Sélectionner…</option>
+                <option>Attestation de résidence</option>
+                <option>Attestation de bonne vie et mœurs</option>
+                <option>Certificat de nationalité</option>
+                <option>Autorisation parentale</option>
+                <option>Autre attestation communale</option>
+              </select>
+            </div>
+            <div class="champ-bloc">
+              <label class="champ-label" for="piece">Pièce justificative (PDF, JPG, PNG)</label>
+              <input type="file" id="piece" class="champ-fichier" accept=".pdf,.jpg,.jpeg,.png" required>
+            </div>
+            <button type="submit" class="bouton bouton-primaire bouton-large">Soumettre la demande</button>
+          </form>
+        </div>
+
+        <div class="panneau">
+          <h2>Mes demandes</h2>
+          <div id="liste-demandes" class="liste-demandes">
+            <div class="etat-vide">Chargement…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/demandes-communes.js"></script>
+  <script>
+    async function chargerMesDemandes() {
+      const zone = document.getElementById('liste-demandes');
+      try {
+        const res = await fetch('/demandes/mes-demandes', { credentials: 'include' });
+        const data = await res.json();
+
+        if (!data.demandes || data.demandes.length === 0) {
+          zone.innerHTML = '<div class="etat-vide">Vous n\'avez encore soumis aucune demande.</div>';
+          return;
+        }
+
+        zone.innerHTML = data.demandes.map(rendreLigneDemande).join('');
+      } catch (err) {
+        zone.innerHTML = '<div class="etat-vide">Impossible de charger vos demandes.</div>';
+      }
+    }
+
+    async function soumettreDemande(e) {
+      e.preventDefault();
+      const typeDocument = document.getElementById('type-document').value;
+      const fichier = document.getElementById('piece').files[0];
+      const erreur = document.getElementById('erreur-form');
+      const succes = document.getElementById('succes-form');
+      erreur.style.display = 'none';
+      succes.style.display = 'none';
+
+      const formData = new FormData();
+      formData.append('typeDocument', typeDocument);
+      formData.append('pieceJustificative', fichier);
+
+      try {
+        const res = await fetch('/demandes', { method: 'POST', credentials: 'include', body: formData });
+        const data = await res.json();
+
+        if (!res.ok) {
+          erreur.textContent = data.error || 'Soumission impossible.';
+          erreur.style.display = 'block';
+          return;
+        }
+
+        succes.textContent = 'Demande soumise. Code de suivi : ' + data.demande.code_suivi;
+        succes.style.display = 'block';
+        document.getElementById('form-demande').reset();
+        chargerMesDemandes();
+      } catch (err) {
+        erreur.textContent = 'Erreur de connexion au serveur.';
+        erreur.style.display = 'block';
+      }
+    }
+
+    chargerMesDemandes();
+  </script>
+</body>
+</html>

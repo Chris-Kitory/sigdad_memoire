@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Espace agent — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="tableau-bord">
+    <div class="conteneur">
+      <div class="tableau-bord-entete">
+        <div>
+          <h1>Vérification des demandes</h1>
+          <p>Contrôlez les dossiers soumis par les citoyens avant transmission au Bourgmestre.</p>
+        </div>
+      </div>
+
+      <div class="grille-principale">
+        <div class="panneau">
+          <h2>Demandes en attente de vérification</h2>
+          <div id="liste-demandes" class="liste-demandes">
+            <div class="etat-vide">Chargement…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/demandes-communes.js"></script>
+  <script>
+    async function chargerDemandes() {
+      const zone = document.getElementById('liste-demandes');
+      try {
+        const res = await fetch('/demandes/a-verifier', { credentials: 'include' });
+        const data = await res.json();
+
+        if (!data.demandes || data.demandes.length === 0) {
+          zone.innerHTML = '<div class="etat-vide">Aucune demande en attente de vérification.</div>';
+          return;
+        }
+
+        zone.innerHTML = data.demandes.map((d) => {
+          const actions = `
+            <div class="ligne-demande-actions">
+              <button class="bouton bouton-secondaire bouton-petit" onclick="rejeter(${d.id})">Rejeter</button>
+              <button class="bouton bouton-primaire bouton-petit" onclick="verifier(${d.id})">Vérifier</button>
+            </div>`;
+          return rendreLigneDemande(d, actions);
+        }).join('');
+      } catch (err) {
+        zone.innerHTML = '<div class="etat-vide">Impossible de charger les demandes.</div>';
+      }
+    }
+
+    async function verifier(id) {
+      await fetch('/demandes/' + id + '/verifier', { method: 'POST', credentials: 'include' });
+      chargerDemandes();
+    }
+
+    async function rejeter(id) {
+      await fetch('/demandes/' + id + '/rejeter', { method: 'POST', credentials: 'include' });
+      chargerDemandes();
+    }
+
+    chargerDemandes();
+  </script>
+</body>
+</html>

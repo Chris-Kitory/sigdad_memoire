@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGDA — Commune de Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="heros">
+    <div class="conteneur heros-grille">
+      <div>
+        <h1>Vos démarches administratives, sans vous déplacer deux fois</h1>
+        <p class="heros-texte">
+          Soumettez votre demande d'attestation en ligne, suivez sa vérification par le bureau
+          et sa signature par le Bourgmestre, à chaque étape.
+        </p>
+        <% if (!utilisateur) { %>
+          <a href="/register" class="bouton bouton-primaire">Créer un compte citoyen</a>
+        <% } else if (utilisateur.role === 'citoyen') { %>
+          <a href="/citoyen" class="bouton bouton-primaire">Accéder à mon espace</a>
+        <% } %>
+      </div>
+      <div class="heros-sceau">
+        <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:260px;">
+          <circle cx="110" cy="110" r="100" fill="none" stroke="#1B3358" stroke-width="2"/>
+          <circle cx="110" cy="110" r="82" fill="none" stroke="#B8863A" stroke-width="1.2"/>
+          <circle cx="110" cy="110" r="82" fill="none" stroke="#B8863A" stroke-width="1.2" stroke-dasharray="1 7"/>
+          <path d="M110 60 L119 90 L151 92 L125 111 L134 142 L110 123 L86 142 L95 111 L69 92 L101 90 Z" fill="#1B3358"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="conteneur" id="suivi">
+      <div class="carte-suivi">
+        <div class="carte-suivi-titre">Suivre une demande avec son code</div>
+        <form class="champ-groupe" onsubmit="suivreDemande(event)">
+          <input type="text" id="code-suivi" class="champ" placeholder="Ex : SIGDA-2026-123456" required>
+          <button type="submit" class="bouton bouton-primaire">Suivre</button>
+        </form>
+        <div id="resultat-suivi" class="resultat-suivi" style="display:none;"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="etapes">
+    <div class="conteneur">
+      <h2 class="etapes-titre">Comment se déroule une demande</h2>
+      <div class="etapes-grille">
+        <div class="etape">
+          <div class="etape-numero">1</div>
+          <h3>Soumission</h3>
+          <p>Le citoyen crée sa demande en ligne et joint sa pièce justificative.</p>
+        </div>
+        <div class="etape">
+          <div class="etape-numero">2</div>
+          <h3>Vérification</h3>
+          <p>Un agent du bureau communal contrôle le dossier et valide ou rejette.</p>
+        </div>
+        <div class="etape">
+          <div class="etape-numero">3</div>
+          <h3>Signature</h3>
+          <p>Le Bourgmestre signe électroniquement le document final.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    async function suivreDemande(e) {
+      e.preventDefault();
+      const code = document.getElementById('code-suivi').value.trim();
+      const zone = document.getElementById('resultat-suivi');
+      zone.style.display = 'block';
+      zone.textContent = 'Recherche en cours…';
+
+      try {
+        const res = await fetch('/demandes/suivi/' + encodeURIComponent(code));
+        const data = await res.json();
+
+        if (!res.ok) {
+          zone.textContent = data.error || 'Demande introuvable.';
+          return;
+        }
+
+        const libellesStatut = {
+          soumis: 'Soumise — en attente de vérification',
+          verifie: 'Vérifiée — en attente de signature',
+          signe: 'Signée — document prêt',
+          rejete: 'Rejetée par le bureau communal',
+        };
+
+        zone.innerHTML =
+          '<strong>' + data.type_document + '</strong><br>' +
+          libellesStatut[data.statut] +
+          (data.date_signature ? '<br>Signée le ' + new Date(data.date_signature).toLocaleDateString('fr-FR') : '');
+      } catch (err) {
+        zone.textContent = 'Erreur de connexion au serveur.';
+      }
+    }
+  </script>
+</body>
+</html>

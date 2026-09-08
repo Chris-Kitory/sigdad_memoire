@@ -1,16 +1,24 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const pool = require('./db');
+const { attacherUtilisateur } = require('./middleware/authPage');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(attacherUtilisateur);
 
 app.use('/auth', require('./routes/authRoutes'));
+app.use('/demandes', require('./routes/demandeRoutes'));
 
 // Route de test : verifie que le serveur ET la base de donnees repondent
 app.get('/health', async (req, res) => {
@@ -28,9 +36,7 @@ app.get('/health', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => {
-  res.send('SIGDA Makala - serveur en ligne. Va sur /health pour verifier la connexion DB.');
-});
+app.use('/', require('./routes/pageRoutes'));
 
 app.listen(PORT, () => {
   console.log(`Serveur SIGDA demarre sur le port ${PORT}`);
