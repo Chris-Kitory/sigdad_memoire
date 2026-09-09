@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demande de document — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <%
+    const lienDemande = (id) => {
+      if (utilisateur && utilisateur.role === 'citoyen') return '/citoyen?type=' + id;
+      if (utilisateur) return '/citoyen';
+      return '/register';
+    };
+  %>
+
+  <section class="hero-page">
+    <div class="conteneur">
+      <h1>Demande de document</h1>
+      <p>Sept types de documents délivrés par la commune. Choisissez le vôtre pour voir le prix et les pièces à fournir.</p>
+    </div>
+  </section>
+
+  <section class="section-contenu">
+    <div class="conteneur">
+
+      <div class="doc-section">
+        <div class="doc-section-entete">
+          <h3>Attestation de bonne vie et mœurs</h3>
+          <span class="doc-section-prix">10 $</span>
+        </div>
+        <p>Atteste de la moralité et du comportement civique du demandeur. Un contrôle de cohérence est réalisé avec la police communale avant signature.</p>
+        <a href="<%= lienDemande('attestation_bonne_vie_moeurs') %>" class="bouton bouton-primaire bouton-petit">Faire cette demande</a>
+      </div>
+
+      <div class="doc-section">
+        <div class="doc-section-entete">
+          <h3>Déclaration / Attestation de naissance</h3>
+          <span class="doc-section-prix">Gratuit ≤ 90 jours</span>
+        </div>
+        <p>L'enregistrement et l'établissement de l'acte de naissance sont gratuits à la commune si la déclaration est faite dans les 90 jours suivant la naissance.</p>
+        <div class="doc-section-note">
+          Passé ce délai (90 jours), il faut d'abord obtenir un <strong>jugement supplétif</strong> auprès du tribunal
+          avant de revenir à la commune. La demande devient alors payante (12 $) et le numéro du jugement est requis.
+        </div>
+        <div style="margin-top:14px;">
+          <a href="<%= lienDemande('declaration_naissance') %>" class="bouton bouton-primaire bouton-petit">Faire cette demande</a>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <div class="doc-section-entete">
+          <h3>Acte de mariage</h3>
+          <span class="doc-section-prix">20 $</span>
+        </div>
+        <p>Établit ou délivre une copie de l'acte de mariage célébré à la commune.</p>
+        <a href="<%= lienDemande('acte_mariage') %>" class="bouton bouton-primaire bouton-petit">Faire cette demande</a>
+      </div>
+
+      <div class="doc-section">
+        <div class="doc-section-entete">
+          <h3>Acte de décès</h3>
+          <span class="doc-section-prix">15 $</span>
+        </div>
+        <p>Constate légalement le décès d'un habitant de la commune, sur présentation d'un certificat médical de décès.</p>
+        <a href="<%= lienDemande('acte_deces') %>" class="bouton bouton-primaire bouton-petit">Faire cette demande</a>
+      </div>
+
+      <div class="doc-section">
+        <div class="doc-section-entete">
+          <h3>Attestation de résidence</h3>
+          <span class="doc-section-prix">5 $</span>
+        </div>
+        <p>Confirme le lieu de résidence habituel du demandeur sur le territoire de la commune.</p>
+        <a href="<%= lienDemande('attestation_residence') %>" class="bouton bouton-primaire bouton-petit">Faire cette demande</a>
+      </div>
+
+      <div class="doc-section">
+        <div class="doc-section-entete">
+          <h3>Attestation de composition de famille</h3>
+          <span class="doc-section-prix">6 $</span>
+        </div>
+        <p>Liste les membres du ménage rattachés au demandeur, tels qu'enregistrés à l'état civil communal.</p>
+        <a href="<%= lienDemande('attestation_composition_famille') %>" class="bouton bouton-primaire bouton-petit">Faire cette demande</a>
+      </div>
+
+      <div class="doc-section">
+        <div class="doc-section-entete">
+          <h3>Attestation de célibat</h3>
+          <span class="doc-section-prix">7 $</span>
+        </div>
+        <p>Atteste qu'aucun acte de mariage n'est enregistré au nom du demandeur à la commune.</p>
+        <a href="<%= lienDemande('attestation_celibat') %>" class="bouton bouton-primaire bouton-petit">Faire cette demande</a>
+      </div>
+
+      <p style="font-size:13px;color:var(--encre-douce);margin-top:24px;">
+        Tous les prix sont indicatifs (5 à 20 $ selon le document) et payables en Francs Congolais au taux du jour,
+        en personne à la Maison Communale. Un même type de document ne peut être redemandé que 6 mois après son
+        obtention, y compris dans une autre commune.
+      </p>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

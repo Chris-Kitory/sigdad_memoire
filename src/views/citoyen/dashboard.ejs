@@ -30,6 +30,9 @@
               <span class="bon-paiement-prix" id="bon-prix"></span>
             </div>
             <div class="bon-paiement-corps" id="bon-instructions"></div>
+            <div style="margin-top:12px;">
+              <a id="bon-lien-impression" href="#" target="_blank" class="bouton bouton-secondaire bouton-petit">Imprimer le bon</a>
+            </div>
           </div>
 
           <form id="form-demande" onsubmit="soumettreDemande(event)">
@@ -93,6 +96,13 @@
           : doc.label + ' — ' + doc.prix + ' $';
         select.appendChild(option);
       });
+
+      const typePreselectionne = new URLSearchParams(window.location.search).get('type');
+      if (typePreselectionne && CATALOGUE[typePreselectionne]) {
+        select.value = typePreselectionne;
+        surChangementType();
+        select.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
 
     function surChangementType() {
@@ -142,7 +152,12 @@
           return;
         }
 
-        zone.innerHTML = data.demandes.map((d) => rendreLigneDemande(d)).join('');
+        zone.innerHTML = data.demandes.map((d) => {
+          const actions = d.statut === 'en_attente_paiement'
+            ? `<div class="ligne-demande-actions"><a href="/citoyen/bon/${d.id}" target="_blank" class="bouton bouton-secondaire bouton-petit">Imprimer</a></div>`
+            : '';
+          return rendreLigneDemande(d, actions);
+        }).join('');
       } catch (err) {
         zone.innerHTML = '<div class="etat-vide">Impossible de charger vos demandes.</div>';
       }
@@ -178,6 +193,7 @@
         document.getElementById('bon-code').textContent = data.demande.bon_paiement;
         document.getElementById('bon-prix').textContent = data.demande.gratuit ? 'GRATUIT' : parseFloat(data.demande.prix_usd) + ' $';
         document.getElementById('bon-instructions').textContent = data.instructions;
+        document.getElementById('bon-lien-impression').href = '/citoyen/bon/' + data.demande.id;
         bonPaiement.style.display = 'block';
 
         document.getElementById('form-demande').reset();

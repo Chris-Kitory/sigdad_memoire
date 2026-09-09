@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Structure — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <section class="hero-page">
+    <div class="conteneur">
+      <h1>Structure de la Maison Communale</h1>
+      <p>Organisation administrative de la commune de Makala et répartition des responsabilités.</p>
+    </div>
+  </section>
+
+  <section class="section-contenu">
+    <div class="conteneur">
+      <div class="organigramme">
+        <div class="org-niveau">
+          <div class="org-noeud principal">
+            <strong>Bourgmestre</strong>
+            <span>Autorité communale — signature électronique des actes</span>
+          </div>
+        </div>
+        <div class="org-niveau">
+          <div class="org-noeud">
+            <strong>Bourgmestre adjoint</strong>
+            <span>Supplée le Bourgmestre</span>
+          </div>
+          <div class="org-noeud">
+            <strong>Secrétariat communal</strong>
+            <span>Coordination administrative</span>
+          </div>
+        </div>
+        <div class="org-niveau">
+          <div class="org-noeud">
+            <strong>Service État Civil</strong>
+            <span>Naissances, mariages, décès</span>
+          </div>
+          <div class="org-noeud">
+            <strong>Service Population</strong>
+            <span>Résidence, composition de famille, célibat</span>
+          </div>
+          <div class="org-noeud">
+            <strong>Bureau SIGDA</strong>
+            <span>Vérification des demandes &amp; guichet paiement</span>
+          </div>
+          <div class="org-noeud">
+            <strong>Police communale</strong>
+            <span>Bonne vie et mœurs, ordre public</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-contenu">
+    <div class="conteneur">
+      <h2>Rôle de chaque service dans SIGDA</h2>
+      <div class="grille-3">
+        <div class="carte-info">
+          <h3>Agent (guichet)</h3>
+          <p>Confirme le paiement reçu en personne, vérifie les pièces justificatives, transmet au Bourgmestre.</p>
+        </div>
+        <div class="carte-info">
+          <h3>Bourgmestre</h3>
+          <p>Signe électroniquement les documents vérifiés et supervise les statistiques de la commune.</p>
+        </div>
+        <div class="carte-info">
+          <h3>Citoyen</h3>
+          <p>Soumet sa demande en ligne, paie au guichet, récupère son document signé en PDF.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

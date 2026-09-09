@@ -15,6 +15,14 @@ const {
 } = require('../models/demandeModel');
 const { obtenirDocument, calculerPrix, CATALOGUE_DOCUMENTS } = require('../config/documents');
 
+function avecLibelle(demande) {
+  if (!demande) return demande;
+  return { ...demande, type_document_label: obtenirDocument(demande.type_document)?.label || demande.type_document };
+}
+function listeAvecLibelle(demandes) {
+  return demandes.map(avecLibelle);
+}
+
 // Public : liste du catalogue de documents avec prix
 function catalogue(req, res) {
   const liste = Object.entries(CATALOGUE_DOCUMENTS).map(([id, doc]) => ({
@@ -85,7 +93,7 @@ async function mesDemandes(req, res) {
   try {
     await expirerBonsDepasses();
     const demandes = await trouverParCitoyen(req.utilisateur.id);
-    res.json({ demandes });
+    res.json({ demandes: listeAvecLibelle(demandes) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur.' });
@@ -102,7 +110,7 @@ async function suivre(req, res) {
     }
     res.json({
       code_suivi: demande.code_suivi,
-      type_document: demande.type_document,
+      type_document: obtenirDocument(demande.type_document)?.label || demande.type_document,
       statut: demande.statut,
       prix_usd: demande.prix_usd,
       gratuit: demande.gratuit,
@@ -122,7 +130,7 @@ async function rechercherParBon(req, res) {
     if (!demande) {
       return res.status(404).json({ error: 'Aucune demande trouvee avec ce bon.' });
     }
-    res.json({ demande });
+    res.json({ demande: avecLibelle(demande) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur.' });
@@ -134,7 +142,7 @@ async function aVerifier(req, res) {
   try {
     await expirerBonsDepasses();
     const demandes = await listerParStatut('en_attente_paiement');
-    res.json({ demandes });
+    res.json({ demandes: listeAvecLibelle(demandes) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur.' });
@@ -172,7 +180,7 @@ async function rejeter(req, res) {
 async function aSigner(req, res) {
   try {
     const demandes = await listerParStatut('verifie');
-    res.json({ demandes });
+    res.json({ demandes: listeAvecLibelle(demandes) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur.' });

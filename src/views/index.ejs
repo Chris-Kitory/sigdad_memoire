@@ -14,8 +14,8 @@
       <div>
         <h1>Vos démarches administratives, sans vous déplacer deux fois</h1>
         <p class="heros-texte">
-          Soumettez votre demande d'attestation en ligne, suivez sa vérification par le bureau
-          et sa signature par le Bourgmestre, à chaque étape.
+          Soumettez votre demande d'attestation en ligne, payez au guichet avec votre bon,
+          et récupérez votre document signé électroniquement — sans file d'attente inutile.
         </p>
         <% if (!utilisateur) { %>
           <a href="/register" class="bouton bouton-primaire">Créer un compte citoyen</a>
@@ -56,14 +56,75 @@
         </div>
         <div class="etape">
           <div class="etape-numero">2</div>
-          <h3>Vérification</h3>
-          <p>Un agent du bureau communal contrôle le dossier et valide ou rejette.</p>
+          <h3>Paiement &amp; vérification</h3>
+          <p>Un bon de paiement est délivré (48h). L'agent confirme le paiement et vérifie le dossier au guichet.</p>
         </div>
         <div class="etape">
           <div class="etape-numero">3</div>
           <h3>Signature</h3>
-          <p>Le Bourgmestre signe électroniquement le document final.</p>
+          <p>Le Bourgmestre signe électroniquement. Le document PDF est prêt, scellé par l'Hôtel de Ville.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-contenu" style="border-top:1px solid var(--bordure);">
+    <div class="conteneur">
+      <h2>Documents disponibles</h2>
+      <div class="grille-documents">
+        <a href="/demande-document" class="carte-doc">
+          <svg viewBox="0 0 40 40"><path d="M8 34V16l12-9 12 9v18H8z" fill="none" stroke="#1B3358" stroke-width="2"/><path d="M17 34V23h6v11" fill="none" stroke="#1B3358" stroke-width="2"/></svg>
+          <span>Résidence</span>
+        </a>
+        <a href="/demande-document" class="carte-doc">
+          <svg viewBox="0 0 40 40"><circle cx="14" cy="14" r="5" fill="none" stroke="#1B3358" stroke-width="2"/><circle cx="26" cy="14" r="5" fill="none" stroke="#1B3358" stroke-width="2"/><path d="M6 33c0-6 4-10 8-10s8 4 8 10M18 33c0-6 4-10 8-10s8 4 8 10" fill="none" stroke="#1B3358" stroke-width="2"/></svg>
+          <span>Composition de famille</span>
+        </a>
+        <a href="/demande-document" class="carte-doc">
+          <svg viewBox="0 0 40 40"><circle cx="15" cy="20" r="8" fill="none" stroke="#1B3358" stroke-width="2"/><circle cx="26" cy="20" r="8" fill="none" stroke="#1B3358" stroke-width="2"/></svg>
+          <span>Mariage</span>
+        </a>
+        <a href="/demande-document" class="carte-doc">
+          <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="none" stroke="#1B3358" stroke-width="2"/><path d="M20 12v8l6 4" fill="none" stroke="#1B3358" stroke-width="2"/></svg>
+          <span>Décès</span>
+        </a>
+        <a href="/demande-document" class="carte-doc">
+          <svg viewBox="0 0 40 40"><circle cx="20" cy="14" r="6" fill="none" stroke="#1B3358" stroke-width="2"/><path d="M8 34c2-9 8-13 12-13s10 4 12 13" fill="none" stroke="#1B3358" stroke-width="2"/></svg>
+          <span>Naissance</span>
+        </a>
+        <a href="/demande-document" class="carte-doc">
+          <svg viewBox="0 0 40 40"><rect x="9" y="6" width="22" height="28" rx="2" fill="none" stroke="#1B3358" stroke-width="2"/><path d="M14 14h12M14 20h12M14 26h8" stroke="#1B3358" stroke-width="2"/></svg>
+          <span>Bonne vie et mœurs</span>
+        </a>
+        <a href="/demande-document" class="carte-doc">
+          <svg viewBox="0 0 40 40"><circle cx="20" cy="16" r="7" fill="none" stroke="#1B3358" stroke-width="2"/><path d="M9 34c1-8 6-12 11-12s10 4 11 12" fill="none" stroke="#1B3358" stroke-width="2"/><circle cx="20" cy="16" r="2.5" fill="#1B3358"/></svg>
+          <span>Célibat</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="bandeau-hdv">
+    <div class="conteneur bandeau-hdv-contenu">
+      <svg viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:380px;">
+        <rect x="30" y="70" width="260" height="80" fill="#F3F5F5" stroke="#1B3358" stroke-width="2"/>
+        <polygon points="20,70 160,20 300,70" fill="#1B3358"/>
+        <rect x="60" y="90" width="18" height="60" fill="#1B3358"/>
+        <rect x="95" y="90" width="18" height="60" fill="#1B3358"/>
+        <rect x="151" y="85" width="18" height="65" fill="#B8863A"/>
+        <rect x="207" y="90" width="18" height="60" fill="#1B3358"/>
+        <rect x="242" y="90" width="18" height="60" fill="#1B3358"/>
+        <rect x="155" y="10" width="3" height="14" fill="#4B5763"/>
+        <rect x="158" y="10" width="16" height="10" fill="#007FFF"/>
+        <polygon points="158,20 166,20 174,10 166,10" fill="#F7D618"/>
+        <polygon points="158,20 162,20 174,10 170,10" fill="#CE1021"/>
+      </svg>
+      <div>
+        <h2 style="font-size:22px;">L'Hôtel de Ville, désormais accessible en ligne</h2>
+        <p style="color:var(--encre-douce);font-size:14.5px;max-width:48ch;">
+          Chaque document signé porte le sceau numérique unique de l'Hôtel de Ville de Makala,
+          garantissant son authenticité auprès de toute administration.
+        </p>
       </div>
     </div>
   </section>
@@ -88,14 +149,17 @@
         }
 
         const libellesStatut = {
-          soumis: 'Soumise — en attente de vérification',
+          en_attente_paiement: 'En attente de paiement / vérification',
           verifie: 'Vérifiée — en attente de signature',
           signe: 'Signée — document prêt',
           rejete: 'Rejetée par le bureau communal',
+          expire: 'Expirée (bon de paiement dépassé)',
         };
 
+        const prix = data.gratuit || parseFloat(data.prix_usd) === 0 ? 'Gratuit' : parseFloat(data.prix_usd).toFixed(0) + ' $';
+
         zone.innerHTML =
-          '<strong>' + data.type_document + '</strong><br>' +
+          '<strong>' + data.type_document + '</strong> · ' + prix + '<br>' +
           libellesStatut[data.statut] +
           (data.date_signature ? '<br>Signée le ' + new Date(data.date_signature).toLocaleDateString('fr-FR') : '');
       } catch (err) {
