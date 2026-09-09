@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Espace Bourgmestre — SIGDA Makala</title>
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .cartes-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .carte-stat { background: var(--papier-carte); border: 1px solid var(--bordure); border-radius: var(--rayon); padding: 18px; box-shadow: var(--ombre); }
+    .carte-stat-valeur { font-family: 'Source Serif 4', serif; font-size: 28px; font-weight: 700; color: var(--autorite); }
+    .carte-stat-label { font-size: 13px; color: var(--encre-douce); margin-top: 4px; }
+    .stat-ligne { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--bordure); font-size: 14.5px; }
+    .stat-ligne:last-child { border-bottom: none; }
+    @media (max-width: 780px) { .cartes-stats { grid-template-columns: repeat(2, 1fr); } }
+  </style>
 </head>
 <body>
   <%- include('../partials/header') %>
@@ -13,17 +22,24 @@
     <div class="conteneur">
       <div class="tableau-bord-entete">
         <div>
-          <h1>Signature des documents</h1>
-          <p>Ces demandes ont été vérifiées par le bureau et attendent votre signature.</p>
+          <h1>Tableau de bord du Bourgmestre</h1>
+          <p>Vue d'ensemble des demandes et signature électronique des documents vérifiés.</p>
         </div>
       </div>
 
-      <div class="grille-principale">
+      <div class="cartes-stats" id="cartes-stats"></div>
+
+      <div class="grille-principale" style="grid-template-columns: 1fr 1fr; align-items:start;">
         <div class="panneau">
           <h2>Demandes prêtes à signer</h2>
           <div id="liste-demandes" class="liste-demandes">
             <div class="etat-vide">Chargement…</div>
           </div>
+        </div>
+
+        <div class="panneau">
+          <h2>Demandes par type de document</h2>
+          <div id="stats-type"></div>
         </div>
       </div>
     </div>
@@ -33,6 +49,28 @@
 
   <script src="/js/demandes-communes.js"></script>
   <script>
+    async function chargerStatistiques() {
+      const res = await fetch('/demandes/statistiques', { credentials: 'include' });
+      const stats = await res.json();
+
+      const parStatutMap = {};
+      stats.parStatut.forEach((s) => { parStatutMap[s.statut] = parseInt(s.total, 10); });
+
+      document.getElementById('cartes-stats').innerHTML = `
+        <div class="carte-stat"><div class="carte-stat-valeur">${stats.totalCitoyens}</div><div class="carte-stat-label">Citoyens inscrits</div></div>
+        <div class="carte-stat"><div class="carte-stat-valeur">${parStatutMap.en_attente_paiement || 0}</div><div class="carte-stat-label">En attente de paiement</div></div>
+        <div class="carte-stat"><div class="carte-stat-valeur">${parStatutMap.signe || 0}</div><div class="carte-stat-label">Documents signés</div></div>
+        <div class="carte-stat"><div class="carte-stat-valeur">${stats.revenusUsd.toFixed(0)} $</div><div class="carte-stat-label">Revenus perçus</div></div>
+      `;
+
+      document.getElementById('stats-type').innerHTML = stats.parType.map((t) => `
+        <div class="stat-ligne">
+          <span>${t.type_document}</span>
+          <span><strong>${t.total}</strong> demande(s) · ${t.signes} signée(s)</span>
+        </div>
+      `).join('') || '<div class="etat-vide">Aucune donnée.</div>';
+    }
+
     async function chargerDemandes() {
       const zone = document.getElementById('liste-demandes');
       try {
@@ -59,9 +97,11 @@
     async function signer(id) {
       await fetch('/demandes/' + id + '/signer', { method: 'POST', credentials: 'include' });
       chargerDemandes();
+      chargerStatistiques();
     }
 
     chargerDemandes();
+    chargerStatistiques();
   </script>
 </body>
 </html>

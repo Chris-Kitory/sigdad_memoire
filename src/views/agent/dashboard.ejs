@@ -13,14 +13,23 @@
     <div class="conteneur">
       <div class="tableau-bord-entete">
         <div>
-          <h1>Vérification des demandes</h1>
-          <p>Contrôlez les dossiers soumis par les citoyens avant transmission au Bourgmestre.</p>
+          <h1>Guichet — Paiement &amp; vérification</h1>
+          <p>Le citoyen présente son bon de paiement à l'accueil ; recherchez-le ou retrouvez-le dans la liste.</p>
         </div>
       </div>
 
       <div class="grille-principale">
         <div class="panneau">
-          <h2>Demandes en attente de vérification</h2>
+          <h2>Rechercher par bon de paiement</h2>
+          <form class="champ-groupe" onsubmit="rechercherBon(event)">
+            <input type="text" id="recherche-bon" class="champ" placeholder="Ex : BON-482913" required>
+            <button type="submit" class="bouton bouton-primaire">Rechercher</button>
+          </form>
+          <div id="resultat-recherche" style="margin-top:14px;"></div>
+        </div>
+
+        <div class="panneau">
+          <h2>Demandes en attente de paiement</h2>
           <div id="liste-demandes" class="liste-demandes">
             <div class="etat-vide">Chargement…</div>
           </div>
@@ -40,7 +49,7 @@
         const data = await res.json();
 
         if (!data.demandes || data.demandes.length === 0) {
-          zone.innerHTML = '<div class="etat-vide">Aucune demande en attente de vérification.</div>';
+          zone.innerHTML = '<div class="etat-vide">Aucune demande en attente.</div>';
           return;
         }
 
@@ -48,7 +57,7 @@
           const actions = `
             <div class="ligne-demande-actions">
               <button class="bouton bouton-secondaire bouton-petit" onclick="rejeter(${d.id})">Rejeter</button>
-              <button class="bouton bouton-primaire bouton-petit" onclick="verifier(${d.id})">Vérifier</button>
+              <button class="bouton bouton-primaire bouton-petit" onclick="verifier(${d.id})">Confirmer &amp; vérifier</button>
             </div>`;
           return rendreLigneDemande(d, actions);
         }).join('');
@@ -57,13 +66,42 @@
       }
     }
 
+    async function rechercherBon(e) {
+      e.preventDefault();
+      const code = document.getElementById('recherche-bon').value.trim();
+      const zone = document.getElementById('resultat-recherche');
+      zone.innerHTML = 'Recherche…';
+
+      try {
+        const res = await fetch('/demandes/bon/' + encodeURIComponent(code), { credentials: 'include' });
+        const data = await res.json();
+
+        if (!res.ok) {
+          zone.innerHTML = '<div class="etat-vide">' + (data.error || 'Introuvable.') + '</div>';
+          return;
+        }
+
+        const d = data.demande;
+        const actions = d.statut === 'en_attente_paiement' ? `
+            <div class="ligne-demande-actions">
+              <button class="bouton bouton-secondaire bouton-petit" onclick="rejeter(${d.id})">Rejeter</button>
+              <button class="bouton bouton-primaire bouton-petit" onclick="verifier(${d.id})">Confirmer &amp; vérifier</button>
+            </div>` : '';
+        zone.innerHTML = rendreLigneDemande(d, actions);
+      } catch (err) {
+        zone.innerHTML = '<div class="etat-vide">Erreur de recherche.</div>';
+      }
+    }
+
     async function verifier(id) {
       await fetch('/demandes/' + id + '/verifier', { method: 'POST', credentials: 'include' });
+      document.getElementById('resultat-recherche').innerHTML = '';
       chargerDemandes();
     }
 
     async function rejeter(id) {
       await fetch('/demandes/' + id + '/rejeter', { method: 'POST', credentials: 'include' });
+      document.getElementById('resultat-recherche').innerHTML = '';
       chargerDemandes();
     }
 

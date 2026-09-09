@@ -343,6 +343,44 @@ img, svg { max-width: 100%; }
   display: none;
 }
 
+/* ---------- Bon de paiement (representation d'un vrai recu officiel) ---------- */
+
+.bon-paiement {
+  border: 1.5px dashed var(--or);
+  border-radius: var(--rayon);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  background: #FCFAF5;
+  display: none;
+}
+
+.bon-paiement-entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.bon-paiement-code {
+  font-family: 'Source Serif 4', serif;
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--autorite);
+  letter-spacing: 0.5px;
+}
+
+.bon-paiement-prix {
+  font-weight: 700;
+  color: var(--or);
+  font-size: 16px;
+}
+
+.bon-paiement-corps {
+  font-size: 14px;
+  color: var(--encre-douce);
+  line-height: 1.55;
+}
+
 /* ---------- Tableaux de bord ---------- */
 
 .tableau-bord {
@@ -400,7 +438,7 @@ img, svg { max-width: 100%; }
   border-radius: 2px;
   flex-shrink: 0;
 }
-.barre-soumis { background: var(--bleu-attente); }
+.barre-attente { background: var(--bleu-attente); }
 .barre-verifie { background: var(--or); }
 .barre-signe { background: var(--vert-signe); }
 .barre-rejete { background: var(--brique-rejet); }
@@ -433,7 +471,7 @@ img, svg { max-width: 100%; }
   font-weight: 600;
   white-space: nowrap;
 }
-.pastille-soumis { background: var(--bleu-attente-fond); color: var(--bleu-attente); }
+.pastille-attente { background: var(--bleu-attente-fond); color: var(--bleu-attente); }
 .pastille-verifie { background: var(--or-clair); color: #8A6423; }
 .pastille-signe { background: var(--vert-signe-fond); color: var(--vert-signe); }
 .pastille-rejete { background: var(--brique-rejet-fond); color: var(--brique-rejet); }
