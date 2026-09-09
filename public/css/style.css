@@ -46,7 +46,7 @@ img, svg { max-width: 100%; }
 
 .conteneur {
   max-width: 1080px;
-  margin: 0 auto;
+  margin: 3px auto;
   padding: 0 24px;
 }
 
@@ -74,8 +74,9 @@ img, svg { max-width: 100%; }
 
 .marque-sceau {
   width: 40px;
-  height: 40px;
+  height: 25px;
   flex-shrink: 0;
+  border-radius: 2px;
 }
 
 .marque-texte { line-height: 1.2; }
@@ -107,6 +108,8 @@ img, svg { max-width: 100%; }
 }
 
 .entete-nav a:hover { color: var(--autorite); }
+.entete-nav a.bouton-primaire,
+.entete-nav a.bouton-primaire:hover { color: #fff; }
 
 .entete-utilisateur {
   display: flex;
@@ -216,6 +219,31 @@ img, svg { max-width: 100%; }
 }
 
 .heros-sceau { justify-self: center; }
+
+.plaque-drapeau {
+  background: var(--papier-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+  padding: 28px;
+  text-align: center;
+  max-width: 260px;
+}
+
+.plaque-drapeau img {
+  width: 100%;
+  max-width: 200px;
+  border-radius: 3px;
+  margin-bottom: 14px;
+}
+
+.plaque-drapeau span {
+  display: block;
+  font-family: 'Source Serif 4', serif;
+  font-size: 13.5px;
+  color: var(--autorite);
+  font-weight: 600;
+}
 
 /* ---------- Carte de suivi ---------- */
 
@@ -631,6 +659,12 @@ img, svg { max-width: 100%; }
   padding: 28px 0;
   color: var(--encre-douce);
   font-size: 13.5px;
+}
+
+.pied-contenu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* ---------- Responsive ---------- */
