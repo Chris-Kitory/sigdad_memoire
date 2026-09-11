@@ -18,6 +18,10 @@
         <div class="entete-utilisateur">
           <% if (utilisateur.role === 'citoyen') { %>
             <a href="/citoyen" style="text-decoration:none;color:var(--autorite);font-weight:600;">Mon profil</a>
+          <% } else if (utilisateur.role === 'agent') { %>
+            <a href="/agent" style="text-decoration:none;color:var(--autorite);font-weight:600;">Tableau de bord</a>
+          <% } else if (utilisateur.role === 'bourgmestre') { %>
+            <a href="/bourgmestre" style="text-decoration:none;color:var(--autorite);font-weight:600;">Tableau de bord</a>
           <% } %>
           <span><%= utilisateur.email %></span>
           <button type="button" class="bouton-texte" onclick="deconnexion()">Se déconnecter</button>
