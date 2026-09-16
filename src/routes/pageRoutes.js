@@ -64,8 +64,59 @@ router.get('/agent', requireRolePage('agent'), (req, res) => {
   res.render('agent/dashboard', { utilisateur: req.utilisateurPage, page: 'espace-agent' });
 });
 
+router.get('/agent/citoyens', requireRolePage('agent'), (req, res) => {
+  res.render('agent/citoyens', { utilisateur: req.utilisateurPage, page: 'espace-agent' });
+});
+
+router.get('/agent/verifier/:id', requireRolePage('agent'), async (req, res) => {
+  const demande = await trouverParId(req.params.id);
+  if (!demande) return res.redirect('/agent');
+  const doc = obtenirDocument(demande.type_document);
+  res.render('agent/verifier', {
+    utilisateur: req.utilisateurPage,
+    page: 'espace-agent',
+    demande,
+    doc,
+  });
+});
+
 router.get('/bourgmestre', requireRolePage('bourgmestre'), (req, res) => {
   res.render('bourgmestre/dashboard', { utilisateur: req.utilisateurPage, page: 'espace-bourgmestre' });
+});
+
+router.get('/bourgmestre/utilisateurs', requireRolePage('bourgmestre'), (req, res) => {
+  res.render('bourgmestre/utilisateurs', { utilisateur: req.utilisateurPage, page: 'espace-bourgmestre' });
+});
+
+router.get('/bourgmestre/signer/:id', requireRolePage('bourgmestre'), async (req, res) => {
+  const demande = await trouverParId(req.params.id);
+  if (!demande) return res.redirect('/bourgmestre');
+  const doc = obtenirDocument(demande.type_document);
+  res.render('bourgmestre/signer', {
+    utilisateur: req.utilisateurPage,
+    page: 'espace-bourgmestre',
+    demande,
+    doc,
+  });
+});
+
+// Apercu du document : accessible au citoyen proprietaire, a l'agent, au Bourgmestre
+router.get('/document/apercu/:id', async (req, res) => {
+  if (!req.utilisateurPage) return res.redirect('/login');
+  const demande = await trouverParId(req.params.id);
+  if (!demande) return res.redirect('/');
+
+  const estProprietaire = req.utilisateurPage.role === 'citoyen' && demande.citoyen_id === req.utilisateurPage.id;
+  const estPersonnelCommunal = req.utilisateurPage.role === 'agent' || req.utilisateurPage.role === 'bourgmestre';
+  if (!estProprietaire && !estPersonnelCommunal) return res.redirect('/');
+
+  const doc = obtenirDocument(demande.type_document);
+  res.render('document-apercu', {
+    utilisateur: req.utilisateurPage,
+    page: 'apercu',
+    demande,
+    doc,
+  });
 });
 
 module.exports = router;

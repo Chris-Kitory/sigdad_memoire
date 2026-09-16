@@ -1,0 +1,41 @@
+<%
+  const champsAffiches = doc ? doc.champsIdentite : [];
+  const donneesAffichees = demande.donnees_identite_verifiees || demande.donnees_identite || {};
+%>
+<div class="doc-officiel">
+  <div class="doc-officiel-entete">
+    <svg width="34" height="34" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="18.5" fill="none" stroke="#1B3358" stroke-width="1.5"/>
+      <circle cx="20" cy="20" r="14" fill="none" stroke="#B8863A" stroke-width="1"/>
+      <path d="M20 10 L23 17 L30.5 17.7 L25 22.6 L26.8 30 L20 26 L13.2 30 L15 22.6 L9.5 17.7 L17 17 Z" fill="#1B3358"/>
+    </svg>
+    <div>
+      <div class="doc-officiel-pays">République Démocratique du Congo</div>
+      <div class="doc-officiel-commune">Maison Communale de Makala</div>
+    </div>
+  </div>
+
+  <h2 class="doc-officiel-titre"><%= doc ? doc.label : demande.type_document %></h2>
+
+  <table class="doc-officiel-tableau">
+    <% champsAffiches.forEach((champ) => { %>
+      <tr>
+        <td><%= champ.label %></td>
+        <td><%= donneesAffichees[champ.id] || '—' %></td>
+      </tr>
+    <% }) %>
+  </table>
+
+  <div class="doc-officiel-pied">
+    <span>Code de suivi : <strong><%= demande.code_suivi %></strong></span>
+    <span class="pastille pastille-<%= { en_attente_paiement: 'attente', verifie: 'verifie', signe: 'signe', rejete: 'rejete', expire: 'rejete' }[demande.statut] %>">
+      <%= { en_attente_paiement: 'En attente de paiement', verifie: 'Vérifiée', signe: 'Signée', rejete: 'Rejetée', expire: 'Expirée' }[demande.statut] %>
+    </span>
+  </div>
+
+  <% if (demande.statut === 'signe') { %>
+    <div class="doc-officiel-sceau">
+      Sceau numérique : <%= demande.code_qr %> — signé le <%= new Date(demande.date_signature).toLocaleDateString('fr-FR') %>
+    </div>
+  <% } %>
+</div>

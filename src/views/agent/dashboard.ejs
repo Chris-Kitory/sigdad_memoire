@@ -16,6 +16,7 @@
           <h1>Guichet — Paiement &amp; vérification</h1>
           <p>Le citoyen présente son bon de paiement à l'accueil ; recherchez-le ou retrouvez-le dans la liste.</p>
         </div>
+        <a href="/agent/citoyens" class="bouton bouton-secondaire bouton-petit">Citoyens inscrits</a>
       </div>
 
       <div class="grille-principale">
@@ -42,6 +43,13 @@
 
   <script src="/js/demandes-communes.js"></script>
   <script>
+    function actionsPourDemande(d) {
+      if (d.statut !== 'en_attente_paiement') return '';
+      return `<div class="ligne-demande-actions">
+        <a href="/agent/verifier/${d.id}" class="bouton bouton-primaire bouton-petit">Traiter</a>
+      </div>`;
+    }
+
     async function chargerDemandes() {
       const zone = document.getElementById('liste-demandes');
       try {
@@ -53,14 +61,7 @@
           return;
         }
 
-        zone.innerHTML = data.demandes.map((d) => {
-          const actions = `
-            <div class="ligne-demande-actions">
-              <button class="bouton bouton-secondaire bouton-petit" onclick="rejeter(${d.id})">Rejeter</button>
-              <button class="bouton bouton-primaire bouton-petit" onclick="verifier(${d.id})">Confirmer &amp; vérifier</button>
-            </div>`;
-          return rendreLigneDemande(d, actions);
-        }).join('');
+        zone.innerHTML = data.demandes.map((d) => rendreLigneDemande(d, actionsPourDemande(d))).join('');
       } catch (err) {
         zone.innerHTML = '<div class="etat-vide">Impossible de charger les demandes.</div>';
       }
@@ -81,28 +82,10 @@
           return;
         }
 
-        const d = data.demande;
-        const actions = d.statut === 'en_attente_paiement' ? `
-            <div class="ligne-demande-actions">
-              <button class="bouton bouton-secondaire bouton-petit" onclick="rejeter(${d.id})">Rejeter</button>
-              <button class="bouton bouton-primaire bouton-petit" onclick="verifier(${d.id})">Confirmer &amp; vérifier</button>
-            </div>` : '';
-        zone.innerHTML = rendreLigneDemande(d, actions);
+        zone.innerHTML = rendreLigneDemande(data.demande, actionsPourDemande(data.demande));
       } catch (err) {
         zone.innerHTML = '<div class="etat-vide">Erreur de recherche.</div>';
       }
-    }
-
-    async function verifier(id) {
-      await fetch('/demandes/' + id + '/verifier', { method: 'POST', credentials: 'include' });
-      document.getElementById('resultat-recherche').innerHTML = '';
-      chargerDemandes();
-    }
-
-    async function rejeter(id) {
-      await fetch('/demandes/' + id + '/rejeter', { method: 'POST', credentials: 'include' });
-      document.getElementById('resultat-recherche').innerHTML = '';
-      chargerDemandes();
     }
 
     chargerDemandes();

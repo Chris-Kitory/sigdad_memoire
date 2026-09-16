@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vérification — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <%
+    const donneesInit = demande.donnees_identite_verifiees || demande.donnees_identite || {};
+    const champs = doc ? doc.champsIdentite : [];
+    const extension = demande.piece_identitaire ? demande.piece_identitaire.split('.').pop().toLowerCase() : '';
+    const estImage = ['jpg', 'jpeg', 'png'].includes(extension);
+  %>
+
+  <main class="tableau-bord">
+    <div class="conteneur">
+      <div class="tableau-bord-entete">
+        <div>
+          <h1>Vérification de la demande</h1>
+          <p>Bon <%= demande.bon_paiement %> — <%= doc ? doc.label : demande.type_document %></p>
+        </div>
+        <a href="/agent" class="bouton bouton-secondaire bouton-petit">← Retour</a>
+      </div>
+
+      <div class="grille-principale grille-avec-formulaire">
+        <div class="panneau">
+          <h2>Pièce identitaire</h2>
+          <% if (demande.piece_identitaire) { %>
+            <div class="piece-apercu">
+              <% if (estImage) { %>
+                <img src="/demandes/<%= demande.id %>/piece" alt="Pièce identitaire">
+              <% } else { %>
+                <p class="piece-apercu-lien">Fichier PDF téléversé.</p>
+              <% } %>
+            </div>
+            <a href="/demandes/<%= demande.id %>/piece" target="_blank" class="bouton bouton-secondaire bouton-petit">Ouvrir en plein écran</a>
+          <% } else { %>
+            <p class="etat-vide">Aucune pièce jointe.</p>
+          <% } %>
+
+          <h2 style="margin-top:24px;">Aperçu du document</h2>
+          <a href="/document/apercu/<%= demande.id %>" target="_blank" class="bouton bouton-secondaire bouton-petit">Voir le rendu officiel</a>
+        </div>
+
+        <div class="panneau">
+          <h2>Informations d'identité</h2>
+          <p style="font-size:13px;color:var(--encre-douce);margin-bottom:16px;">
+            Contrôlez ces informations avec la pièce d'identité physique présentée par le citoyen, et corrigez-les si nécessaire avant de valider.
+          </p>
+
+          <div id="message" class="message-succes"></div>
+
+          <form id="form-identite" class="formulaire-identite" onsubmit="return false;">
+            <% champs.forEach((champ) => { %>
+              <div class="champ-bloc">
+                <label class="champ-label"><%= champ.label %></label>
+                <input type="<%= champ.type %>" class="champ" style="width:100%" data-champ="<%= champ.id %>" value="<%= donneesInit[champ.id] || '' %>">
+              </div>
+            <% }) %>
+          </form>
+
+          <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+            <button type="button" class="bouton bouton-secondaire" onclick="enregistrer()">Enregistrer les informations</button>
+            <% if (demande.statut === 'en_attente_paiement') { %>
+              <button type="button" class="bouton bouton-primaire" onclick="confirmerEtVerifier()">Confirmer le paiement &amp; vérifier</button>
+              <button type="button" class="bouton bouton-secondaire" onclick="rejeter()" style="border-color:var(--brique-rejet);color:var(--brique-rejet);">Rejeter</button>
+            <% } else { %>
+              <span class="pastille pastille-verifie">Déjà vérifiée</span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    function lireDonnees() {
+      const donnees = {};
+      document.querySelectorAll('[data-champ]').forEach((input) => {
+        donnees[input.dataset.champ] = input.value;
+      });
+      return donnees;
+    }
+
+    function afficherMessage(texte) {
+      const zone = document.getElementById('message');
+      zone.textContent = texte;
+      zone.style.display = 'block';
+    }
+
+    async function enregistrer() {
+      const res = await fetch('/demandes/<%= demande.id %>/donnees', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ donnees: lireDonnees() }),
+      });
+      const data = await res.json();
+      afficherMessage(res.ok ? 'Informations enregistrées.' : (data.error || 'Erreur.'));
+    }
+
+    async function confirmerEtVerifier() {
+      const res = await fetch('/demandes/<%= demande.id %>/verifier', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ donnees: lireDonnees() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        window.location.href = '/agent';
+      } else {
+        afficherMessage(data.error || 'Erreur.');
+      }
+    }
+
+    async function rejeter() {
+      await fetch('/demandes/<%= demande.id %>/rejeter', { method: 'POST', credentials: 'include' });
+      window.location.href = '/agent';
+    }
+  </script>
+</body>
+</html>

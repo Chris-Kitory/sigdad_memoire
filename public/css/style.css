@@ -46,7 +46,7 @@ img, svg { max-width: 100%; }
 
 .conteneur {
   max-width: 1080px;
-  margin: 3px auto;
+  margin: 0 auto;
   padding: 0 24px;
 }
 
@@ -650,6 +650,67 @@ img, svg { max-width: 100%; }
 @media (max-width: 780px) {
   .grille-documents { grid-template-columns: repeat(2, 1fr); }
   .bandeau-hdv-contenu { flex-direction: column; text-align: center; }
+}
+
+/* ---------- Rendu du document officiel (apercu / verification / signature) ---------- */
+
+.doc-officiel {
+  background: #FFFFFF;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+  padding: 32px;
+  max-width: 620px;
+}
+
+.doc-officiel-entete {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 2px solid var(--autorite);
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.doc-officiel-pays { font-size: 12px; color: var(--encre-douce); }
+.doc-officiel-commune { font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 15px; color: var(--autorite); }
+
+.doc-officiel-titre { font-size: 19px; text-align: center; margin-bottom: 20px; }
+
+.doc-officiel-tableau { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.doc-officiel-tableau td { padding: 8px 4px; border-bottom: 1px solid var(--bordure); font-size: 14px; }
+.doc-officiel-tableau td:first-child { color: var(--encre-douce); width: 45%; }
+.doc-officiel-tableau td:last-child { font-weight: 600; }
+
+.doc-officiel-pied { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--encre-douce); flex-wrap: wrap; gap: 8px; }
+
+.doc-officiel-sceau {
+  margin-top: 16px;
+  padding: 10px 14px;
+  border: 1.5px dashed var(--or);
+  border-radius: var(--rayon);
+  font-size: 12px;
+  color: #8A6423;
+  background: #FCFAF5;
+  text-align: center;
+}
+
+.piece-apercu {
+  max-width: 320px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  padding: 10px;
+  background: var(--papier-carte);
+  margin-bottom: 16px;
+}
+.piece-apercu img { width: 100%; border-radius: 4px; display: block; }
+.piece-apercu-lien { font-size: 13px; color: var(--autorite); }
+
+.formulaire-identite { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.formulaire-identite .champ-bloc.pleine-largeur { grid-column: 1 / -1; }
+
+@media (max-width: 780px) {
+  .formulaire-identite { grid-template-columns: 1fr; }
 }
 
 /* ---------- Pied de page ---------- */

@@ -30,8 +30,9 @@
               <span class="bon-paiement-prix" id="bon-prix"></span>
             </div>
             <div class="bon-paiement-corps" id="bon-instructions"></div>
-            <div style="margin-top:12px;">
+            <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
               <a id="bon-lien-impression" href="#" target="_blank" class="bouton bouton-secondaire bouton-petit">Imprimer le bon</a>
+              <a id="bon-lien-apercu" href="#" target="_blank" class="bouton bouton-secondaire bouton-petit">Voir l'aperçu du document</a>
             </div>
           </div>
 
@@ -58,9 +59,15 @@
               <input type="text" id="jugement" class="champ" style="width:100%" placeholder="Délai de 90 jours dépassé — jugement requis">
             </div>
 
+            <div id="bloc-identite" class="formulaire-identite" style="margin-bottom:18px;"></div>
+
             <div class="champ-bloc">
-              <label class="champ-label" for="piece">Pièce justificative (PDF, JPG, PNG)</label>
-              <input type="file" id="piece" class="champ-fichier" accept=".pdf,.jpg,.jpeg,.png" required>
+              <label class="champ-label" for="piece">Pièce identitaire (carte d'identité, passeport… — PDF, JPG, PNG)</label>
+              <input type="file" id="piece" class="champ-fichier" accept=".pdf,.jpg,.jpeg,.png" required onchange="apercuFichier()">
+              <div id="apercu-fichier" style="display:none;margin-top:10px;" class="piece-apercu">
+                <img id="apercu-image" style="display:none;" alt="Aperçu de la pièce">
+                <p id="apercu-nom-pdf" style="display:none;" class="piece-apercu-lien"></p>
+              </div>
             </div>
 
             <button type="submit" class="bouton bouton-primaire bouton-large">Soumettre la demande</button>
@@ -105,6 +112,17 @@
       }
     }
 
+    function rendreChampsIdentite(doc) {
+      const zone = document.getElementById('bloc-identite');
+      if (!doc) { zone.innerHTML = ''; return; }
+      zone.innerHTML = doc.champsIdentite.map((champ) => `
+        <div class="champ-bloc">
+          <label class="champ-label">${champ.label}</label>
+          <input type="${champ.type}" class="champ" style="width:100%" data-champ-identite="${champ.id}" required>
+        </div>
+      `).join('');
+    }
+
     function surChangementType() {
       const id = document.getElementById('type-document').value;
       const doc = CATALOGUE[id];
@@ -117,8 +135,11 @@
         blocDateNaissance.style.display = 'none';
         blocJugement.style.display = 'none';
         blocPrix.style.display = 'none';
+        rendreChampsIdentite(null);
         return;
       }
+
+      rendreChampsIdentite(doc);
 
       if (doc.estNaissance) {
         blocDateNaissance.style.display = 'block';
@@ -141,6 +162,25 @@
       }
     }
 
+    function apercuFichier() {
+      const fichier = document.getElementById('piece').files[0];
+      const zone = document.getElementById('apercu-fichier');
+      const img = document.getElementById('apercu-image');
+      const nomPdf = document.getElementById('apercu-nom-pdf');
+      if (!fichier) { zone.style.display = 'none'; return; }
+
+      zone.style.display = 'block';
+      if (fichier.type.startsWith('image/')) {
+        img.src = URL.createObjectURL(fichier);
+        img.style.display = 'block';
+        nomPdf.style.display = 'none';
+      } else {
+        img.style.display = 'none';
+        nomPdf.style.display = 'block';
+        nomPdf.textContent = 'Fichier PDF sélectionné : ' + fichier.name;
+      }
+    }
+
     async function chargerMesDemandes() {
       const zone = document.getElementById('liste-demandes');
       try {
@@ -153,9 +193,15 @@
         }
 
         zone.innerHTML = data.demandes.map((d) => {
-          const actions = d.statut === 'en_attente_paiement'
-            ? `<div class="ligne-demande-actions"><a href="/citoyen/bon/${d.id}" target="_blank" class="bouton bouton-secondaire bouton-petit">Imprimer</a></div>`
-            : '';
+          let actions = `<div class="ligne-demande-actions">`;
+          if (d.statut === 'en_attente_paiement') {
+            actions += `<a href="/citoyen/bon/${d.id}" target="_blank" class="bouton bouton-secondaire bouton-petit">Bon</a>`;
+          }
+          actions += `<a href="/document/apercu/${d.id}" target="_blank" class="bouton bouton-secondaire bouton-petit">Aperçu</a>`;
+          if (d.statut === 'signe') {
+            actions += `<a href="/demandes/${d.id}/pdf" class="bouton bouton-primaire bouton-petit">PDF</a>`;
+          }
+          actions += `</div>`;
           return rendreLigneDemande(d, actions);
         }).join('');
       } catch (err) {
@@ -178,7 +224,10 @@
       formData.append('typeDocument', typeDocument);
       if (dateEvenement) formData.append('dateEvenement', dateEvenement);
       if (jugement) formData.append('jugementSuppletifNumero', jugement);
-      formData.append('pieceJustificative', fichier);
+      formData.append('pieceIdentitaire', fichier);
+      document.querySelectorAll('[data-champ-identite]').forEach((input) => {
+        formData.append(input.dataset.champIdentite, input.value);
+      });
 
       try {
         const res = await fetch('/demandes', { method: 'POST', credentials: 'include', body: formData });
@@ -194,12 +243,15 @@
         document.getElementById('bon-prix').textContent = data.demande.gratuit ? 'GRATUIT' : parseFloat(data.demande.prix_usd) + ' $';
         document.getElementById('bon-instructions').textContent = data.instructions;
         document.getElementById('bon-lien-impression').href = '/citoyen/bon/' + data.demande.id;
+        document.getElementById('bon-lien-apercu').href = '/document/apercu/' + data.demande.id;
         bonPaiement.style.display = 'block';
 
         document.getElementById('form-demande').reset();
         document.getElementById('bloc-date-naissance').style.display = 'none';
         document.getElementById('bloc-jugement').style.display = 'none';
         document.getElementById('bloc-prix').style.display = 'none';
+        document.getElementById('apercu-fichier').style.display = 'none';
+        rendreChampsIdentite(null);
         chargerMesDemandes();
       } catch (err) {
         erreur.textContent = 'Erreur de connexion au serveur.';

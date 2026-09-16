@@ -1,4 +1,4 @@
--- Schéma SIGDA - avec paiement et règles métier
+-- Schéma SIGDA - avec paiement, règles métier et données d'identité
 
 CREATE TABLE utilisateurs (
     id SERIAL PRIMARY KEY,
@@ -18,7 +18,13 @@ CREATE TABLE demandes (
     statut VARCHAR(30) NOT NULL DEFAULT 'en_attente_paiement'
         CHECK (statut IN ('en_attente_paiement', 'verifie', 'signe', 'rejete', 'expire')),
 
-    piece_justificative VARCHAR(255),
+    -- Piece d'identite televersee par le citoyen (carte d'identite, passeport, etc.)
+    piece_identitaire VARCHAR(255),
+
+    -- Donnees d'identite saisies par le citoyen, adaptees au type de document (JSON flexible)
+    donnees_identite JSONB NOT NULL DEFAULT '{}',
+    -- Donnees corrigees/validees par l'agent apres controle de la piece physique (NULL tant que non verifie)
+    donnees_identite_verifiees JSONB,
 
     -- Paiement
     prix_usd NUMERIC(6,2) NOT NULL DEFAULT 0,

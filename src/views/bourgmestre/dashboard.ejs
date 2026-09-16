@@ -25,6 +25,7 @@
           <h1>Tableau de bord du Bourgmestre</h1>
           <p>Vue d'ensemble des demandes et signature électronique des documents vérifiés.</p>
         </div>
+        <a href="/bourgmestre/utilisateurs" class="bouton bouton-secondaire bouton-petit">Personnes inscrites</a>
       </div>
 
       <div class="cartes-stats" id="cartes-stats"></div>
@@ -85,19 +86,13 @@
         zone.innerHTML = data.demandes.map((d) => {
           const actions = `
             <div class="ligne-demande-actions">
-              <button class="bouton bouton-primaire bouton-petit" onclick="signer(${d.id})">Signer</button>
+              <a href="/bourgmestre/signer/${d.id}" class="bouton bouton-primaire bouton-petit">Voir &amp; signer</a>
             </div>`;
           return rendreLigneDemande(d, actions);
         }).join('');
       } catch (err) {
         zone.innerHTML = '<div class="etat-vide">Impossible de charger les demandes.</div>';
       }
-    }
-
-    async function signer(id) {
-      await fetch('/demandes/' + id + '/signer', { method: 'POST', credentials: 'include' });
-      chargerDemandes();
-      chargerStatistiques();
     }
 
     chargerDemandes();

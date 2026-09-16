@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citoyens inscrits — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="tableau-bord">
+    <div class="conteneur">
+      <div class="tableau-bord-entete">
+        <div>
+          <h1>Citoyens inscrits</h1>
+          <p>Citoyens ayant soumis au moins une demande auprès de la commune.</p>
+        </div>
+        <a href="/agent" class="bouton bouton-secondaire bouton-petit">← Retour</a>
+      </div>
+
+      <div class="panneau">
+        <div id="liste" class="liste-demandes">
+          <div class="etat-vide">Chargement…</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    async function charger() {
+      const zone = document.getElementById('liste');
+      const res = await fetch('/demandes/citoyens', { credentials: 'include' });
+      const data = await res.json();
+
+      if (!data.citoyens || data.citoyens.length === 0) {
+        zone.innerHTML = '<div class="etat-vide">Aucun citoyen n\'a encore soumis de demande.</div>';
+        return;
+      }
+
+      zone.innerHTML = data.citoyens.map((c) => `
+        <div class="ligne-demande">
+          <div class="ligne-demande-barre barre-attente"></div>
+          <div class="ligne-demande-corps">
+            <div class="ligne-demande-type">${c.nom} ${c.postnom || ''}</div>
+            <div class="ligne-demande-meta">${c.email} · inscrit le ${new Date(c.date_creation).toLocaleDateString('fr-FR')}</div>
+          </div>
+          <span style="font-size:12.5px;color:var(--encre-douce);">${c.nombre_demandes} demande(s) · ${c.demandes_signees} signée(s)</span>
+        </div>
+      `).join('');
+    }
+
+    charger();
+  </script>
+</body>
+</html>

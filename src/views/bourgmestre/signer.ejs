@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signature — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="tableau-bord">
+    <div class="conteneur">
+      <div class="tableau-bord-entete">
+        <div>
+          <h1>Signature du document</h1>
+          <p>Vérifiez l'aperçu avant d'apposer votre signature électronique.</p>
+        </div>
+        <a href="/bourgmestre" class="bouton bouton-secondaire bouton-petit">← Retour</a>
+      </div>
+
+      <%- include('../partials/document-rendu', { demande, doc }) %>
+
+      <% if (demande.piece_identitaire) { %>
+        <p style="margin-top:16px;">
+          <a href="/demandes/<%= demande.id %>/piece" target="_blank" class="bouton bouton-secondaire bouton-petit">Voir la pièce identitaire</a>
+        </p>
+      <% } %>
+
+      <div style="margin-top:20px;">
+        <% if (demande.statut === 'verifie') { %>
+          <button type="button" class="bouton bouton-primaire" onclick="signer()">Signer électroniquement</button>
+        <% } else { %>
+          <span class="pastille pastille-signe">Déjà signée</span>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    async function signer() {
+      const res = await fetch('/demandes/<%= demande.id %>/signer', { method: 'POST', credentials: 'include' });
+      if (res.ok) {
+        window.location.href = '/bourgmestre';
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Erreur lors de la signature.');
+      }
+    }
+  </script>
+</body>
+</html>

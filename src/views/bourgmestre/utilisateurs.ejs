@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Utilisateurs — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="tableau-bord">
+    <div class="conteneur">
+      <div class="tableau-bord-entete">
+        <div>
+          <h1>Personnes inscrites</h1>
+          <p>Ensemble des comptes du système — citoyens et personnel communal.</p>
+        </div>
+        <a href="/bourgmestre" class="bouton bouton-secondaire bouton-petit">← Retour</a>
+      </div>
+
+      <div class="panneau">
+        <div id="liste" class="liste-demandes">
+          <div class="etat-vide">Chargement…</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    const LIBELLES_ROLE = { citoyen: 'Citoyen', agent: 'Agent', bourgmestre: 'Bourgmestre' };
+
+    async function charger() {
+      const zone = document.getElementById('liste');
+      const res = await fetch('/demandes/utilisateurs', { credentials: 'include' });
+      const data = await res.json();
+
+      if (!data.utilisateurs || data.utilisateurs.length === 0) {
+        zone.innerHTML = '<div class="etat-vide">Aucun utilisateur.</div>';
+        return;
+      }
+
+      zone.innerHTML = data.utilisateurs.map((u) => `
+        <div class="ligne-demande">
+          <div class="ligne-demande-barre barre-${u.role === 'citoyen' ? 'attente' : u.role === 'agent' ? 'verifie' : 'signe'}"></div>
+          <div class="ligne-demande-corps">
+            <div class="ligne-demande-type">${u.nom} ${u.postnom || ''}</div>
+            <div class="ligne-demande-meta">${u.email} · inscrit le ${new Date(u.date_creation).toLocaleDateString('fr-FR')}</div>
+          </div>
+          <span class="pastille pastille-${u.role === 'citoyen' ? 'attente' : u.role === 'agent' ? 'verifie' : 'signe'}">${LIBELLES_ROLE[u.role]}</span>
+          ${u.role === 'citoyen' ? `<span style="font-size:12.5px;color:var(--encre-douce);margin-left:10px;">${u.nombre_demandes} demande(s)</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    charger();
+  </script>
+</body>
+</html>

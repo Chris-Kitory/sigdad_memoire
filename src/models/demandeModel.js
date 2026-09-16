@@ -14,7 +14,6 @@ function genererBonPaiement() {
 const DELAI_PAIEMENT_HEURES = 48;
 const DELAI_COOLDOWN_MOIS = 6;
 
-// Fait expirer automatiquement les demandes non traitees dont le bon a depasse son delai
 async function expirerBonsDepasses() {
   await pool.query(
     `UPDATE demandes SET statut = 'expire'
@@ -22,7 +21,6 @@ async function expirerBonsDepasses() {
   );
 }
 
-// Verifie si le citoyen peut redemander ce type de document (delai de 6 mois depuis la derniere obtention)
 async function verifierDelaiCooldown({ citoyenId, typeDocument }) {
   const result = await pool.query(
     `SELECT date_signature FROM demandes
@@ -43,18 +41,18 @@ async function verifierDelaiCooldown({ citoyenId, typeDocument }) {
   return { autorise: true };
 }
 
-async function creerDemande({ citoyenId, typeDocument, pieceJustificative, prix, gratuit, dateEvenement, jugementSuppletifNumero }) {
+async function creerDemande({ citoyenId, typeDocument, pieceIdentitaire, donneesIdentite, prix, gratuit, dateEvenement, jugementSuppletifNumero }) {
   const codeSuivi = genererCodeSuivi();
   const bonPaiement = genererBonPaiement();
   const dateExpirationBon = new Date(Date.now() + DELAI_PAIEMENT_HEURES * 60 * 60 * 1000);
 
   const result = await pool.query(
     `INSERT INTO demandes
-       (code_suivi, citoyen_id, type_document, piece_justificative, prix_usd, gratuit,
+       (code_suivi, citoyen_id, type_document, piece_identitaire, donnees_identite, prix_usd, gratuit,
         bon_paiement, date_expiration_bon, date_evenement, jugement_suppletif_numero)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
      RETURNING *`,
-    [codeSuivi, citoyenId, typeDocument, pieceJustificative, prix, gratuit,
+    [codeSuivi, citoyenId, typeDocument, pieceIdentitaire, JSON.stringify(donneesIdentite || {}), prix, gratuit,
       bonPaiement, dateExpirationBon, dateEvenement || null, jugementSuppletifNumero || null]
   );
   return result.rows[0];
@@ -76,7 +74,12 @@ async function trouverParBon(bonPaiement) {
 }
 
 async function trouverParId(id) {
-  const result = await pool.query('SELECT * FROM demandes WHERE id = $1', [id]);
+  const result = await pool.query(
+    `SELECT d.*, u.nom AS citoyen_nom, u.postnom AS citoyen_postnom, u.email AS citoyen_email
+     FROM demandes d JOIN utilisateurs u ON u.id = d.citoyen_id
+     WHERE d.id = $1`,
+    [id]
+  );
   return result.rows[0];
 }
 
@@ -98,13 +101,24 @@ async function listerParStatut(statut) {
   return result.rows;
 }
 
-// Agent : confirme le paiement (recu en personne) ET valide le dossier en une seule etape
-async function verifierDemande({ id, agentId }) {
+// Agent : enregistre/corrige les informations d'identite apres controle de la piece physique
+async function mettreAJourDonneesVerifiees({ id, donneesIdentiteVerifiees }) {
   const result = await pool.query(
-    `UPDATE demandes SET statut = 'verifie', agent_verificateur_id = $2, date_verification = NOW(), date_paiement = NOW()
+    `UPDATE demandes SET donnees_identite_verifiees = $2 WHERE id = $1 RETURNING *`,
+    [id, JSON.stringify(donneesIdentiteVerifiees)]
+  );
+  return result.rows[0];
+}
+
+// Agent : confirme le paiement (recu en personne) ET valide le dossier
+async function verifierDemande({ id, agentId, donneesIdentiteVerifiees }) {
+  const result = await pool.query(
+    `UPDATE demandes
+     SET statut = 'verifie', agent_verificateur_id = $2, date_verification = NOW(), date_paiement = NOW(),
+         donnees_identite_verifiees = COALESCE($3, donnees_identite_verifiees, donnees_identite)
      WHERE id = $1 AND statut = 'en_attente_paiement'
      RETURNING *`,
-    [id, agentId]
+    [id, agentId, donneesIdentiteVerifiees ? JSON.stringify(donneesIdentiteVerifiees) : null]
   );
   return result.rows[0];
 }
@@ -129,7 +143,6 @@ async function signerDemande({ id, bourgmestreId, codeQr }) {
   return result.rows[0];
 }
 
-// Statistiques pour le tableau de bord du Bourgmestre
 async function obtenirStatistiques() {
   const parType = await pool.query(
     `SELECT type_document, COUNT(*) AS total,
@@ -154,6 +167,34 @@ async function obtenirStatistiques() {
   };
 }
 
+// Bourgmestre : liste de tous les utilisateurs (agents + citoyens)
+async function listerTousUtilisateurs() {
+  const result = await pool.query(
+    `SELECT u.id, u.nom, u.postnom, u.email, u.role, u.date_creation,
+            COUNT(d.id) AS nombre_demandes
+     FROM utilisateurs u
+     LEFT JOIN demandes d ON d.citoyen_id = u.id
+     GROUP BY u.id
+     ORDER BY u.role, u.date_creation DESC`
+  );
+  return result.rows;
+}
+
+// Agent : liste des citoyens ayant soumis au moins une demande
+async function listerCitoyensAvecDemandes() {
+  const result = await pool.query(
+    `SELECT u.id, u.nom, u.postnom, u.email, u.date_creation,
+            COUNT(d.id) AS nombre_demandes,
+            COUNT(d.id) FILTER (WHERE d.statut = 'signe') AS demandes_signees
+     FROM utilisateurs u
+     JOIN demandes d ON d.citoyen_id = u.id
+     WHERE u.role = 'citoyen'
+     GROUP BY u.id
+     ORDER BY MAX(d.date_creation) DESC`
+  );
+  return result.rows;
+}
+
 module.exports = {
   creerDemande,
   trouverParCode,
@@ -167,5 +208,8 @@ module.exports = {
   verifierDelaiCooldown,
   expirerBonsDepasses,
   obtenirStatistiques,
+  mettreAJourDonneesVerifiees,
+  listerTousUtilisateurs,
+  listerCitoyensAvecDemandes,
   DELAI_PAIEMENT_HEURES,
 };

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aperçu du document — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <main class="tableau-bord">
+    <div class="conteneur">
+      <div class="tableau-bord-entete">
+        <div>
+          <h1>Aperçu du document</h1>
+          <p>Rendu officiel généré à partir des informations enregistrées.</p>
+        </div>
+        <a href="<%= utilisateur.role === 'citoyen' ? '/citoyen' : utilisateur.role === 'agent' ? '/agent' : '/bourgmestre' %>" class="bouton bouton-secondaire bouton-petit">← Retour</a>
+      </div>
+
+      <%- include('partials/document-rendu', { demande, doc }) %>
+
+      <% if (demande.piece_identitaire) { %>
+        <p style="margin-top:20px;">
+          <a href="/demandes/<%= demande.id %>/piece" target="_blank" class="bouton bouton-secondaire bouton-petit">Voir la pièce identitaire</a>
+        </p>
+      <% } %>
+
+      <% if (utilisateur.role === 'citoyen' && demande.statut === 'signe') { %>
+        <p>
+          <a href="/demandes/<%= demande.id %>/pdf" class="bouton bouton-primaire bouton-petit">Télécharger le PDF</a>
+        </p>
+      <% } %>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

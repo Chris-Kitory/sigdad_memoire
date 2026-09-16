@@ -15,13 +15,13 @@
           <a href="/register" class="bouton bouton-primaire bouton-petit">Créer un compte</a>
         </div>
       <% } else { %>
+        <%
+          const espaceParRole = { citoyen: ['/citoyen', 'Mon profil'], agent: ['/agent', 'Mon espace'], bourgmestre: ['/bourgmestre', 'Mon espace'] };
+          const espace = espaceParRole[utilisateur.role];
+        %>
         <div class="entete-utilisateur">
-          <% if (utilisateur.role === 'citoyen') { %>
-            <a href="/citoyen" style="text-decoration:none;color:var(--autorite);font-weight:600;">Mon profil</a>
-          <% } else if (utilisateur.role === 'agent') { %>
-            <a href="/agent" style="text-decoration:none;color:var(--autorite);font-weight:600;">Tableau de bord</a>
-          <% } else if (utilisateur.role === 'bourgmestre') { %>
-            <a href="/bourgmestre" style="text-decoration:none;color:var(--autorite);font-weight:600;">Tableau de bord</a>
+          <% if (espace) { %>
+            <a href="<%= espace[0] %>" style="text-decoration:none;color:var(--autorite);font-weight:600;"><%= espace[1] %></a>
           <% } %>
           <span><%= utilisateur.email %></span>
           <button type="button" class="bouton-texte" onclick="deconnexion()">Se déconnecter</button>
