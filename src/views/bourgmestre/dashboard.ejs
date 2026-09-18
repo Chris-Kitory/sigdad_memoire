@@ -77,19 +77,9 @@
       try {
         const res = await fetch('/demandes/a-signer', { credentials: 'include' });
         const data = await res.json();
-
-        if (!data.demandes || data.demandes.length === 0) {
-          zone.innerHTML = '<div class="etat-vide">Aucune demande en attente de signature.</div>';
-          return;
-        }
-
-        zone.innerHTML = data.demandes.map((d) => {
-          const actions = `
-            <div class="ligne-demande-actions">
-              <a href="/bourgmestre/signer/${d.id}" class="bouton bouton-primaire bouton-petit">Voir &amp; signer</a>
-            </div>`;
-          return rendreLigneDemande(d, actions);
-        }).join('');
+        zone.innerHTML = rendreTableauDemandes(data.demandes, 'Action', (d) =>
+          `<a href="/bourgmestre/signer/${d.id}" class="bouton bouton-primaire bouton-petit">Voir &amp; signer</a>`
+        );
       } catch (err) {
         zone.innerHTML = '<div class="etat-vide">Impossible de charger les demandes.</div>';
       }

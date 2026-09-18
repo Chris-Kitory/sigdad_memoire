@@ -43,7 +43,11 @@
           <% } %>
 
           <h2 style="margin-top:24px;">Aperçu du document</h2>
-          <a href="/document/apercu/<%= demande.id %>" target="_blank" class="bouton bouton-secondaire bouton-petit">Voir le rendu officiel</a>
+          <div class="doc-officiel" style="padding:18px;max-width:none;">
+            <p class="doc-officiel-paragraphe" style="margin:0;"><%= paragraphe %></p>
+          </div>
+          <p style="font-size:12px;color:var(--encre-douce);margin-top:8px;">Se met à jour après « Enregistrer les informations ».</p>
+          <a href="/document/apercu/<%= demande.id %>" target="_blank" class="bouton bouton-secondaire bouton-petit">Voir le rendu officiel complet</a>
         </div>
 
         <div class="panneau">

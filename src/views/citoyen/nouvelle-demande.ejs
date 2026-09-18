@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= doc.label %> — SIGDA Makala</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="tableau-bord">
+    <div class="conteneur" style="max-width:640px;">
+      <div class="tableau-bord-entete">
+        <div>
+          <h1><%= doc.label %></h1>
+          <p>
+            <% if (doc.estNaissance) { %>
+              Gratuit si déclarée dans les <%= doc.delaiGratuitJours %> jours suivant la naissance, sinon <%= doc.prixNaissanceTardive %> $.
+            <% } else { %>
+              <%= doc.prix %> $ — payable en Francs Congolais au taux du jour, à la Maison Communale.
+            <% } %>
+          </p>
+        </div>
+        <a href="/demande-document" class="bouton bouton-secondaire bouton-petit">← Autre document</a>
+      </div>
+
+      <div class="panneau">
+        <div id="erreur-form" class="message-erreur"></div>
+
+        <div id="bon-paiement" class="bon-paiement">
+          <div class="bon-paiement-entete">
+            <span class="bon-paiement-code" id="bon-code"></span>
+            <span class="bon-paiement-prix" id="bon-prix"></span>
+          </div>
+          <div class="bon-paiement-corps" id="bon-instructions"></div>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <a id="bon-lien-impression" href="#" target="_blank" class="bouton bouton-secondaire bouton-petit">Imprimer le bon</a>
+            <a id="bon-lien-apercu" href="#" target="_blank" class="bouton bouton-secondaire bouton-petit">Voir l'aperçu du document</a>
+            <a href="/citoyen" class="bouton bouton-primaire bouton-petit">Aller à mes demandes</a>
+          </div>
+        </div>
+
+        <form id="form-demande" onsubmit="soumettreDemande(event)">
+          <% if (doc.estNaissance) { %>
+            <div class="champ-bloc">
+              <label class="champ-label" for="date-evenement">Date de naissance (de l'enfant)</label>
+              <input type="date" id="date-evenement" class="champ" style="width:100%" required onchange="surChangementDate()">
+            </div>
+            <div class="champ-bloc" id="bloc-jugement" style="display:none;">
+              <label class="champ-label" for="jugement">Numéro du jugement supplétif</label>
+              <input type="text" id="jugement" class="champ" style="width:100%" placeholder="Délai de 90 jours dépassé — jugement requis">
+            </div>
+            <div class="champ-bloc" id="bloc-prix-naissance" style="display:none;">
+              <label class="champ-label">Prix</label>
+              <div id="affichage-prix-naissance" style="font-weight:600;color:var(--or);"></div>
+            </div>
+          <% } %>
+
+          <div class="formulaire-identite" style="margin-bottom:18px;">
+            <% doc.champsIdentite.forEach((champ) => { %>
+              <div class="champ-bloc">
+                <label class="champ-label"><%= champ.label %></label>
+                <input type="<%= champ.type %>" class="champ" style="width:100%" data-champ-identite="<%= champ.id %>" required>
+              </div>
+            <% }) %>
+          </div>
+
+          <div class="champ-bloc">
+            <label class="champ-label" for="piece">Pièce identitaire (carte d'identité, passeport… — PDF, JPG, PNG)</label>
+            <input type="file" id="piece" class="champ-fichier" accept=".pdf,.jpg,.jpeg,.png" required onchange="apercuFichier()">
+            <div id="apercu-fichier" style="display:none;margin-top:10px;" class="piece-apercu">
+              <img id="apercu-image" style="display:none;" alt="Aperçu de la pièce">
+              <p id="apercu-nom-pdf" style="display:none;" class="piece-apercu-lien"></p>
+            </div>
+          </div>
+
+          <button type="submit" class="bouton bouton-primaire bouton-large">Soumettre la demande</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    const TYPE_DOCUMENT = <%- JSON.stringify(typeDocument) %>;
+    const DOC = <%- JSON.stringify(doc) %>;
+
+    function surChangementDate() {
+      if (!DOC.estNaissance) return;
+      const dateVal = document.getElementById('date-evenement').value;
+      const blocJugement = document.getElementById('bloc-jugement');
+      const blocPrix = document.getElementById('bloc-prix-naissance');
+      const affichage = document.getElementById('affichage-prix-naissance');
+      if (!dateVal) { blocJugement.style.display = 'none'; blocPrix.style.display = 'none'; return; }
+      const jours = Math.floor((Date.now() - new Date(dateVal).getTime()) / 86400000);
+      const gratuit = jours <= DOC.delaiGratuitJours;
+      blocJugement.style.display = gratuit ? 'none' : 'block';
+      blocPrix.style.display = 'block';
+      affichage.textContent = gratuit ? 'Gratuit (dans le délai de ' + DOC.delaiGratuitJours + ' jours)' : 'Payant — jugement supplétif requis';
+    }
+
+    function apercuFichier() {
+      const fichier = document.getElementById('piece').files[0];
+      const zone = document.getElementById('apercu-fichier');
+      const img = document.getElementById('apercu-image');
+      const nomPdf = document.getElementById('apercu-nom-pdf');
+      if (!fichier) { zone.style.display = 'none'; return; }
+      zone.style.display = 'block';
+      if (fichier.type.startsWith('image/')) {
+        img.src = URL.createObjectURL(fichier);
+        img.style.display = 'block';
+        nomPdf.style.display = 'none';
+      } else {
+        img.style.display = 'none';
+        nomPdf.style.display = 'block';
+        nomPdf.textContent = 'Fichier PDF sélectionné : ' + fichier.name;
+      }
+    }
+
+    async function soumettreDemande(e) {
+      e.preventDefault();
+      const erreur = document.getElementById('erreur-form');
+      const bonPaiement = document.getElementById('bon-paiement');
+      erreur.style.display = 'none';
+
+      const formData = new FormData();
+      formData.append('typeDocument', TYPE_DOCUMENT);
+      const dateEvenement = document.getElementById('date-evenement');
+      if (dateEvenement) formData.append('dateEvenement', dateEvenement.value);
+      const jugement = document.getElementById('jugement');
+      if (jugement) formData.append('jugementSuppletifNumero', jugement.value);
+      formData.append('pieceIdentitaire', document.getElementById('piece').files[0]);
+      document.querySelectorAll('[data-champ-identite]').forEach((input) => {
+        formData.append(input.dataset.champIdentite, input.value);
+      });
+
+      try {
+        const res = await fetch('/demandes', { method: 'POST', credentials: 'include', body: formData });
+        const data = await res.json();
+
+        if (!res.ok) {
+          erreur.textContent = data.error || 'Soumission impossible.';
+          erreur.style.display = 'block';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        document.getElementById('bon-code').textContent = data.demande.bon_paiement;
+        document.getElementById('bon-prix').textContent = data.demande.gratuit ? 'GRATUIT' : parseFloat(data.demande.prix_usd) + ' $';
+        document.getElementById('bon-instructions').textContent = data.instructions;
+        document.getElementById('bon-lien-impression').href = '/citoyen/bon/' + data.demande.id;
+        document.getElementById('bon-lien-apercu').href = '/document/apercu/' + data.demande.id;
+        document.getElementById('form-demande').style.display = 'none';
+        bonPaiement.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        erreur.textContent = 'Erreur de connexion au serveur.';
+        erreur.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

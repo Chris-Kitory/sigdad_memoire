@@ -45,9 +45,7 @@
   <script>
     function actionsPourDemande(d) {
       if (d.statut !== 'en_attente_paiement') return '';
-      return `<div class="ligne-demande-actions">
-        <a href="/agent/verifier/${d.id}" class="bouton bouton-primaire bouton-petit">Traiter</a>
-      </div>`;
+      return `<a href="/agent/verifier/${d.id}" class="bouton bouton-primaire bouton-petit">Traiter</a>`;
     }
 
     async function chargerDemandes() {
@@ -55,13 +53,7 @@
       try {
         const res = await fetch('/demandes/a-verifier', { credentials: 'include' });
         const data = await res.json();
-
-        if (!data.demandes || data.demandes.length === 0) {
-          zone.innerHTML = '<div class="etat-vide">Aucune demande en attente.</div>';
-          return;
-        }
-
-        zone.innerHTML = data.demandes.map((d) => rendreLigneDemande(d, actionsPourDemande(d))).join('');
+        zone.innerHTML = rendreTableauDemandes(data.demandes, 'Action', actionsPourDemande);
       } catch (err) {
         zone.innerHTML = '<div class="etat-vide">Impossible de charger les demandes.</div>';
       }
@@ -82,7 +74,7 @@
           return;
         }
 
-        zone.innerHTML = rendreLigneDemande(data.demande, actionsPourDemande(data.demande));
+        zone.innerHTML = rendreTableauDemandes([data.demande], 'Action', actionsPourDemande);
       } catch (err) {
         zone.innerHTML = '<div class="etat-vide">Erreur de recherche.</div>';
       }

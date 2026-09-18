@@ -19,7 +19,7 @@
         <a href="<%= utilisateur.role === 'citoyen' ? '/citoyen' : utilisateur.role === 'agent' ? '/agent' : '/bourgmestre' %>" class="bouton bouton-secondaire bouton-petit">← Retour</a>
       </div>
 
-      <%- include('partials/document-rendu', { demande, doc }) %>
+      <%- include('partials/document-rendu', { demande, doc, paragraphe, blocSupplementaire }) %>
 
       <% if (demande.piece_identitaire) { %>
         <p style="margin-top:20px;">

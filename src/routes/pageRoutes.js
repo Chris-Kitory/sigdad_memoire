@@ -3,6 +3,7 @@ const router = express.Router();
 const { requireRolePage } = require('../middleware/authPage');
 const { trouverParId } = require('../models/demandeModel');
 const { obtenirDocument } = require('../config/documents');
+const { genererParagraphe } = require('../utils/documentTexte');
 
 router.get('/', (req, res) => {
   res.render('index', { utilisateur: req.utilisateurPage, page: 'accueil' });
@@ -46,6 +47,18 @@ router.get('/citoyen', requireRolePage('citoyen'), (req, res) => {
   res.render('citoyen/dashboard', { utilisateur: req.utilisateurPage, page: 'espace-citoyen' });
 });
 
+// Formulaire dedie a un type de document, dans sa propre page (avant d'arriver sur le tableau de bord)
+router.get('/citoyen/nouvelle-demande/:type', requireRolePage('citoyen'), (req, res) => {
+  const doc = obtenirDocument(req.params.type);
+  if (!doc) return res.redirect('/demande-document');
+  res.render('citoyen/nouvelle-demande', {
+    utilisateur: req.utilisateurPage,
+    page: 'espace-citoyen',
+    typeDocument: req.params.type,
+    doc,
+  });
+});
+
 router.get('/citoyen/bon/:id', requireRolePage('citoyen'), async (req, res) => {
   const demande = await trouverParId(req.params.id);
   if (!demande || demande.citoyen_id !== req.utilisateurPage.id) {
@@ -72,11 +85,14 @@ router.get('/agent/verifier/:id', requireRolePage('agent'), async (req, res) => 
   const demande = await trouverParId(req.params.id);
   if (!demande) return res.redirect('/agent');
   const doc = obtenirDocument(demande.type_document);
+  const { paragraphe, blocSupplementaire } = genererParagraphe(demande.type_document, demande.donnees_identite_verifiees || demande.donnees_identite);
   res.render('agent/verifier', {
     utilisateur: req.utilisateurPage,
     page: 'espace-agent',
     demande,
     doc,
+    paragraphe,
+    blocSupplementaire,
   });
 });
 
@@ -92,11 +108,14 @@ router.get('/bourgmestre/signer/:id', requireRolePage('bourgmestre'), async (req
   const demande = await trouverParId(req.params.id);
   if (!demande) return res.redirect('/bourgmestre');
   const doc = obtenirDocument(demande.type_document);
+  const { paragraphe, blocSupplementaire } = genererParagraphe(demande.type_document, demande.donnees_identite_verifiees || demande.donnees_identite);
   res.render('bourgmestre/signer', {
     utilisateur: req.utilisateurPage,
     page: 'espace-bourgmestre',
     demande,
     doc,
+    paragraphe,
+    blocSupplementaire,
   });
 });
 
@@ -111,11 +130,14 @@ router.get('/document/apercu/:id', async (req, res) => {
   if (!estProprietaire && !estPersonnelCommunal) return res.redirect('/');
 
   const doc = obtenirDocument(demande.type_document);
+  const { paragraphe, blocSupplementaire } = genererParagraphe(demande.type_document, demande.donnees_identite_verifiees || demande.donnees_identite);
   res.render('document-apercu', {
     utilisateur: req.utilisateurPage,
     page: 'apercu',
     demande,
     doc,
+    paragraphe,
+    blocSupplementaire,
   });
 });
 

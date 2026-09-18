@@ -11,7 +11,7 @@
 
   <%
     const lienDemande = (id) => {
-      if (utilisateur && utilisateur.role === 'citoyen') return '/citoyen?type=' + id;
+      if (utilisateur && utilisateur.role === 'citoyen') return '/citoyen/nouvelle-demande/' + id;
       if (utilisateur) return '/citoyen';
       return '/register';
     };
